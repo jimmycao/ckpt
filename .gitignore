@@ -16,4 +16,4 @@ config.status
 src/.deps/
 stamp-h1
 context.*
-src/Makefile
+Makefile
