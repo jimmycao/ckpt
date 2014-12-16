@@ -1,1 +1,13 @@
 autoscan.log
+.cproject
+.project
+aclocal.m4
+autom4te.cache/
+config.h.in
+config.h.in~
+config/
+configure
+Makefile
+Makefile.in
+*.o
+*_bin
