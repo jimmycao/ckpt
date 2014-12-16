@@ -7,7 +7,6 @@ config.h.in
 config.h.in~
 config/
 configure
-Makefile
 Makefile.in
 *.o
 *-bin
@@ -17,3 +16,4 @@ config.status
 src/.deps/
 stamp-h1
 context.*
+src/Makefile
