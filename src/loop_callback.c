@@ -8,10 +8,11 @@
 #include "libcr.h"
 
 
-static int my_callback(void* arg)
+static int callback_fn(void* arg)
 {
 	int rc;
-	rc = cr_checkpoint(0);
+	puts("I must close the socket first!!!!!!");
+	rc = cr_checkpoint(CR_CHECKPOINT_READY);
 	return 0;
 }
 
@@ -43,7 +44,8 @@ static int checkpoint(char* filename)
 	fprintf(stdout, "cr_init, client_id:%d\n", client_id);
 
 	cr_callback_id_t cb_id;
-	cb_id = cr_register_callback(my_callback, NULL, CR_SIGNAL_CONTEXT);
+	void* cb_args = NULL;
+	cb_id = cr_register_callback(callback_fn, cb_args, CR_SIGNAL_CONTEXT);
 	if (cb_id < 0) {
 		fprintf(stderr, "cr_register_callback failed, cb_id:%d\n", cb_id);
 		return -1;
@@ -75,20 +77,25 @@ static int checkpoint(char* filename)
 	cr_checkpoint_handle_t ckpt_handle;
 	rc = cr_request_checkpoint(&my_args, &ckpt_handle);
 	if (rc < 0) {
+		close(my_args.cr_fd);
+		if (filename) {
+			unlink(filename);
+		}
 		fprintf(stderr, "cr_request_checkpoint failed\n");
 		return -1;
 	}
-	printf("cr_request_checkpoint, cr_request_checkpoint:%lu", ckpt_handle);
+	printf("cr_request_checkpoint, chkpt_handle:%lu\n", ckpt_handle);
 
-	/*
-	 * extern int
-cr_request_checkpoint(cr_checkpoint_args_t *args, cr_checkpoint_handle_t *handle);
+	int i = 0;
+	for (i = 0; i < 10; i++) {
+		printf("i:%d\n", i);
+	}
 
 
-	 */
 
-//	cr_request_checkpoint
-//
+
+	 
+
 //      /* Request a checkpoint of ourself */
 //     fd =crut_checkpoint_request(&my_handle, filename);
 //    if (fd < 0)
@@ -125,7 +132,7 @@ cr_register_callback(cr_callback_t	func,
  */
 int main() {
 	int i;
-	char *filename = "/tmp/tmp.log";
+	char *filename = "/tmp/ckpt.test";
 	checkpoint(filename);
 //	for (i = 0; i < 1000; i++) {
 //		print
