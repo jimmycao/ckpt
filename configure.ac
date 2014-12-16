@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.58])
-AC_INIT([slurm-server], [0.0.2], [jimmy.cao@emc.com])
+AC_INIT([ckpt-modeloff], [0.0.1], [amao.chj@gmail.com])
 AC_CONFIG_SRCDIR([src/loop.c])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_AUX_DIR([config])

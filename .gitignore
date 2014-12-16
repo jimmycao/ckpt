@@ -10,4 +10,9 @@ configure
 Makefile
 Makefile.in
 *.o
-*_bin
+*-bin
+config.h
+config.log
+config.status
+src/.deps/
+stamp-h1
