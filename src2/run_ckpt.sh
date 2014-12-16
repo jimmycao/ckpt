@@ -1,4 +1,4 @@
-./ckpt-modeloff-bin > /tmp/ckpt.log 2>&1 &
+./ckpt-modeloff-bin 2>&1 &
 echo "ckpt-modeloff-bin is running"
 
 proc_pid=$(ps -ef|grep ckpt-modeloff-bin | awk '{print $2}' | head -1)
