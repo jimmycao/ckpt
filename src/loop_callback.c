@@ -6,7 +6,7 @@
 #include <fcntl.h>
 
 #include "libcr.h"
-
+#include "log_utils.h"
 
 static int callback_fn(void* arg)
 {
@@ -30,7 +30,7 @@ static int checkpoint(char* filename)
 	}
 
 	if (rc < 0) {
-		fprintf(stderr, "failed to open file");
+		log_error("failed to open file");
 		return rc;
 	}
 
@@ -38,19 +38,20 @@ static int checkpoint(char* filename)
 	cr_client_id_t client_id;
 	client_id = cr_init();
 	if (client_id < 0) {
-		fprintf(stderr, "cr_init failed, client_id:%d\n", client_id);
+		log_error("cr_init failed, client_id:%d\n", client_id);
 		return -1;
 	}
-	fprintf(stdout, "cr_init, client_id:%d\n", client_id);
+	log_info("cr_init, client_id:%d\n", client_id);
 
 	cr_callback_id_t cb_id;
 	void* cb_args = NULL;
 	cb_id = cr_register_callback(callback_fn, cb_args, CR_SIGNAL_CONTEXT);
 	if (cb_id < 0) {
-		fprintf(stderr, "cr_register_callback failed, cb_id:%d\n", cb_id);
+		log_error("cr_register_callback failed, cb_id:%d\n", cb_id);
 		return -1;
 	}
-	fprintf(stdout, "cr_register_callback, cb_id:%d\n", client_id);
+	log_info("cr_register_callback, cb_id:%d\n", client_id);
+	
 
 	/*
 		typedef struct cr_checkpoint_args {
@@ -69,9 +70,9 @@ static int checkpoint(char* filename)
 	cr_initialize_checkpoint_args_t(&my_args);
 	my_args.cr_fd = rc;
 	my_args.cr_scope = CR_SCOPE_PROC;
-	printf("cr_initialize_checkpoint_args_t, cr_version:%d, cr_scope:%d, cr_target:%lu\n",
+	log_info("cr_initialize_checkpoint_args_t, cr_version:%d, cr_scope:%d, cr_target:%lu\n",
 					my_args.cr_version, my_args.cr_scope, my_args.cr_target);
-	printf("cr_initialize_checkpoint_args_t, cr_fd:%d, cr_signal:%d, cr_timeout:%lu, cr_flags:%lu\n",
+	log_info("cr_initialize_checkpoint_args_t, cr_fd:%d, cr_signal:%d, cr_timeout:%lu, cr_flags:%lu\n",
 						my_args.cr_fd, my_args.cr_signal, my_args.cr_timeout, my_args.cr_flags);
 
 	cr_checkpoint_handle_t ckpt_handle;
@@ -81,10 +82,10 @@ static int checkpoint(char* filename)
 		if (filename) {
 			unlink(filename);
 		}
-		fprintf(stderr, "cr_request_checkpoint failed\n");
+		log_error("cr_request_checkpoint failed\n");
 		return -1;
 	}
-	printf("cr_request_checkpoint, chkpt_handle:%lu\n", ckpt_handle);
+	log_info("cr_request_checkpoint, chkpt_handle:%lu\n", ckpt_handle);
 
 	int i = 0;
 	for (i = 0; i < 10; i++) {

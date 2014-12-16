@@ -3,5 +3,5 @@
 LDADD = -L/usr/local/blcr-0.8.5/lib/ -lcr 
 
 bin_PROGRAMS = ckpt-modeloff-bin 
-#ckpt_modeloff_bin_SOURCES = loop.c
-ckpt_modeloff_bin_SOURCES = loop_callback.c
+#ckpt_modeloff_bin_SOURCES = loop.c log_utils.c
+ckpt_modeloff_bin_SOURCES = loop_callback.c log_utils.c

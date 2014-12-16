@@ -3,7 +3,7 @@
 
 AC_PREREQ([2.58])
 AC_INIT([ckpt-modeloff], [0.0.1], [amao.chj@gmail.com])
-AC_CONFIG_SRCDIR([src/loop.c])
+AC_CONFIG_SRCDIR([src/log_utils.h])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_AUX_DIR([config])
 AC_CONFIG_MACRO_DIR([m4])
