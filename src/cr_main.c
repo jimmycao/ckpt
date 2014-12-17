@@ -12,8 +12,15 @@
 static int callback_fn(void* arg)
 {
 	int rc;
-	puts("I must close the socket first!!!!!!");
-	rc = cr_checkpoint(CR_CHECKPOINT_READY);
+	const struct cr_checkpoint_info *ckpt_info = NULL;
+
+	ckpt_info = cr_get_checkpoint_info();
+
+	if (ckpt_info->requester == my_pid && !IF_CHECKPOINT_MYSELF) {
+		rc = cr_checkpoint(CR_CHECKPOINT_OMIT);
+	}  else {
+		rc = cr_checkpoint(CR_CHECKPOINT_READY);
+	}
 	return 0;
 }
 
@@ -31,7 +38,6 @@ int main() {
 		log_error("failed to register_signal_cb");
 		return -1;
 	}
-
 
 	rc = checkpoint();
 	if (rc < 0) {

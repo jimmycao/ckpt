@@ -11,6 +11,7 @@ typedef struct cr_snapshot {
 	int  fd;
 } cr_snapshot_t;
 
+extern pid_t my_pid;
 
 extern int init();
 

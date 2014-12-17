@@ -12,11 +12,14 @@
 #include "constant.h"
 
 
-cr_snapshot_t cr_snapshot;
+static cr_snapshot_t cr_snapshot;
+extern pid_t my_pid = -1;
 
 extern int init()
 {
 	cr_client_id_t client_id;
+
+	my_pid = getpid();
 
 	strncpy(cr_snapshot.local_location, LOCAL_LOCATION, PATH_MAX_LEN - 1);
 	strncpy(cr_snapshot.remote_location, REMOTE_LOCATION, PATH_MAX_LEN - 1);
@@ -108,9 +111,30 @@ extern int checkpoint()
 		log_error("ckpt file:%s is empty", cr_snapshot.local_full_filename);
 		return -1;
 	}
-
 	log_info("ckpt file:%s size:%lu", cr_snapshot.local_full_filename, file_stat.st_size);
+
+	/* wait for checkpoint to finish */
+	do {
+		rc = cr_poll_checkpoint(&ckpt_handle, NULL);
+		if (rc < 0) {
+			if ((rc == CR_POLL_CHKPT_ERR_POST) && (errno == CR_ERESTARTED)) {
+				/* Check if restarting. This is not an error. */
+				rc = 0;
+				break;
+			} else if (errno == EINTR) {
+				/* If Call was interrupted by a signal, retry the call */
+				;
+			} else {
+				/* Otherwise this is a real error that need to deal with */
+				return -1;
+			}
+		}
+	} while (rc < 0);
+
+	/* Close the file */
+	close(my_args.cr_fd);
+
 	return 0;
 }
 
-
+
