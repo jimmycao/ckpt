@@ -134,4 +134,5 @@ int main() {
 	snprintf(filename, FILE_NAME_MAX_LEN-1, "%s/elf_ckpt.%lu", path, tm);
 
 	checkpoint(filename);
+	return 0;
 }
