@@ -29,7 +29,7 @@ extern int init()
 	                cr_snapshot.local_location, cr_snapshot.remote_location,
 	                cr_snapshot.context_filename, cr_snapshot.local_full_filename);
 
-	if (strlen(cr_snapshot.local_full_filename) == 0) {
+	if (strlen(cr_snapshot.local_full_filename) != 0) {
 		unlink(cr_snapshot.local_full_filename);
 		cr_snapshot.fd = open(cr_snapshot.local_full_filename, O_WRONLY | O_CREAT | O_TRUNC, 0600);
 	} else {
@@ -72,10 +72,45 @@ extern int register_thread_cb(cr_callback_t callback_fn, void* arg)
 }
 
 
-extern int finalize()
+extern int checkpoint()
 {
+	cr_checkpoint_args_t my_args;
+	cr_checkpoint_handle_t ckpt_handle;
+	struct stat file_stat;
+	int rc;
 
+	/* init ckpt args */
+	cr_initialize_checkpoint_args_t(&my_args);
+	my_args.cr_fd = cr_snapshot.fd;
+	my_args.cr_scope = CR_SCOPE_PROC;
+	log_info("cr_initialize_checkpoint_args_t, cr_version:%d, cr_scope:%d, cr_target:%lu\n",
+	                my_args.cr_version, my_args.cr_scope, my_args.cr_target);
+	log_info(
+	                "cr_initialize_checkpoint_args_t, cr_fd:%d, cr_signal:%d, cr_timeout:%lu, cr_flags:%lu\n",
+	                my_args.cr_fd, my_args.cr_signal, my_args.cr_timeout, my_args.cr_flags);
+
+	/* submit ckpt request */
+	rc = cr_request_checkpoint(&my_args, &ckpt_handle);
+	if (rc < 0) {
+		close(cr_snapshot.fd);
+		unlink(cr_snapshot.local_full_filename);
+		log_error("cr_request_checkpoint failed\n");
+		return -1;
+	}
+	log_info("cr_request_checkpoint success, chkpt_handle:%lu\n", ckpt_handle);
+
+	/* stat the ckpt file */
+	rc = stat(cr_snapshot.local_full_filename, &file_stat);
+	if (rc < 0) {
+		log_error("failed to stat file:%s", cr_snapshot.local_full_filename);
+		return -1;
+	} else if (file_stat.st_size == 0) {
+		log_error("ckpt file:%s is empty", cr_snapshot.local_full_filename);
+		return -1;
+	}
+
+	log_info("ckpt file:%s size:%lu", cr_snapshot.local_full_filename, file_stat.st_size);
+	return 0;
 }
-
 
 

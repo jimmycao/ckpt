@@ -18,6 +18,8 @@ extern int register_signal_cb(cr_callback_t callback_fn, void* arg);
 
 extern int register_thread_cb(cr_callback_t callback_fn, void* arg);
 
+extern int checkpoint();
+
 extern int finalize();
 
 #endif /* CR_H_ */

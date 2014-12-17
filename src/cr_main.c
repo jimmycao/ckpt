@@ -32,6 +32,17 @@ int main() {
 		return -1;
 	}
 
+
+	rc = checkpoint();
+	if (rc < 0) {
+		log_error("failed to checkpoint()");
+		return -1;
+	}
+
+	int i = 0;
+	for (i = 0; i < 10; i++) {
+		printf("i:%d\n", i);
+	}
 	return 0;
 }
 
