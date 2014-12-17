@@ -1,12 +1,14 @@
-#include <stdio.h>
-#include <stdlib.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <time.h>
 
 #include "libcr.h"
 #include "log_utils.h"
+#include "constant.h"
+
+
 
 static int callback_fn(void* arg)
 {
@@ -91,32 +93,23 @@ static int checkpoint(char* filename)
 	for (i = 0; i < 10; i++) {
 		printf("i:%d\n", i);
 	}
+ 
 
+	struct stat file_stat;
+	rc = stat(filename, &file_stat);
+	if (rc < 0) {
+		log_error("failed to stat file:%s", filename);
+		return -1;
+	} else if (file_stat.st_size == 0) {
+		log_error("ckpt file:%s is empty", filename);
+		return -1;
+	}
 
+	log_info("ckpt file:%s size:%lu", filename, file_stat.st_size);
 
 
 	 
 
-//      /* Request a checkpoint of ourself */
-//     fd =crut_checkpoint_request(&my_handle, filename);
-//    if (fd < 0)
-//          {
-//         LOGE("crut_checkpoint_request() unexpectedly returned 0x%x/n",fd);
-//         return ;
-//          }
-//    rc = stat(filename, &s);
-//    if (rc) {
-//       LOGE("stat() unexpectedly returned%d/n", rc);
-//       return;
-//    } else {
-//       LOGV("stat(context.%d) correctlyreturned 0/n", my_pid);
-//    }
-//    if (s.st_size == 0) {
-//       LOGE("context file unexpectedlyempty/n");
-//       return;
-//    } else {
-//       LOGV("context.%d isnon-empty/n", my_pid);
-//    }
 //    /* Reap the checkpoint request */
 //    rc = crut_checkpoint_wait(&my_handle,fd);
 //    if (rc < 0) {
@@ -133,8 +126,12 @@ cr_register_callback(cr_callback_t	func,
  */
 int main() {
 	int i;
-	char *filename = "/tmp/ckpt.test";
+	char filename[FILE_NAME_MAX_LEN];	
+
+	char *path = "/tmp";
+	
+	time_t tm = time(NULL);
+	snprintf(filename, FILE_NAME_MAX_LEN-1, "%s/elf_ckpt.%lu", path, tm);
+
 	checkpoint(filename);
-//	for (i = 0; i < 1000; i++) {
-//		print
 }

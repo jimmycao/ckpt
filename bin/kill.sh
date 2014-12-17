@@ -1,4 +1,4 @@
-proc_pid=$(ps -ef|grep ckpt-modeloff-bin | awk '{print $2}' | head -1)
+proc_pid=$(ps -ef|grep ckpt-modeloff-bin | awk '{print $2}' | grep -v grep)
 echo "proc_pid = ${proc_pid}"
 
 
