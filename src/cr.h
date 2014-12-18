@@ -16,8 +16,6 @@ typedef struct callback_arg {
 	int fd_array_size;
 } callback_arg_t;
 
-extern pid_t my_pid;
-
 extern int init();
 
 extern int default_signal_callback_fn(void* arg);

@@ -21,19 +21,19 @@ int main() {
 	}
 
 	rc = init();
-	if (rc < 0) {
+	if (rc != RT_SUCCESS) {
 		log_error("failed to init()");
 		return -1;
 	}
 
 	rc = register_signal_cb(default_signal_callback_fn, NULL);
-	if (rc < 0) {
+	if (rc != RT_SUCCESS) {
 		log_error("failed to register_signal_cb");
 		return -1;
 	}
 
 	rc = checkpoint(&snapshot);
-	if (rc < 0) {
+	if (rc != RT_SUCCESS) {
 		log_error("failed to checkpoint()");
 		return -1;
 	}

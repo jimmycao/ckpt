@@ -15,7 +15,7 @@
 #include "log_utils.h"
 #include "argv.h"
 
-pid_t my_pid = -1;
+static pid_t my_pid = -1;
 
 static cr_snapshot_t cr_snapshot;
 
@@ -29,7 +29,7 @@ extern int init()
 	rc = gethostname(hostname, 255);
 	if (rc < 0) {
 		log_error("failed to gethostname()");
-		return -1;
+		return RT_ERROR;
 	}
 	time_t tm = time(NULL);
 
@@ -52,16 +52,16 @@ extern int init()
 	}
 	if (cr_snapshot.fd < 0) {
 		log_error("failed to open file");
-		return -1;
+		return RT_ERROR;
 	}
 
 	client_id = cr_init();
 	if (client_id < 0) {
-		log_error("cr_init failed, client_id:%d\n", client_id);
-		return -1;
+		log_error("cr_init failed, client_id:%d", client_id);
+		return RT_ERROR;
 	}
-	log_info("cr_init successful, client_id:%d\n", client_id);
-	return 0;
+	log_info("cr_init successful, client_id:%d", client_id);
+	return RT_SUCCESS;
 }
 
 extern int default_signal_callback_fn(void* arg)
@@ -84,7 +84,7 @@ extern int default_signal_callback_fn(void* arg)
 	}  else {
 		rc = cr_checkpoint(CR_CHECKPOINT_READY);
 	}
-	return 0;
+	return RT_SUCCESS;
 }
 
 extern int register_signal_cb(cr_callback_t callback_fn, void* arg)
@@ -92,10 +92,11 @@ extern int register_signal_cb(cr_callback_t callback_fn, void* arg)
 	cr_callback_id_t cb_id;
 	cb_id = cr_register_callback(callback_fn, arg, CR_SIGNAL_CONTEXT);
 	if (cb_id < 0) {
-		log_error("register_signal_cb failed, cb_id:%d\n", cb_id);
-		return -1;
+		log_error("register_signal_cb failed, cb_id:%d", cb_id);
+		return RT_ERROR;
 	}
-	log_info("register_signal_cb successful, cb_id:%d\n", cb_id);
+	log_info("register_signal_cb successful, cb_id:%d", cb_id);
+	return RT_SUCCESS;
 }
 
 
@@ -105,10 +106,11 @@ extern int register_thread_cb(cr_callback_t callback_fn, void* arg)
 	cr_callback_id_t cb_id;
 	cb_id = cr_register_callback(callback_fn, arg, CR_THREAD_CONTEXT);
 	if (cb_id < 0) {
-		log_error("register_thread_cb failed, cb_id:%d\n", cb_id);
-		return -1;
+		log_error("register_thread_cb failed, cb_id:%d", cb_id);
+		return RT_ERROR;
 	}
-	log_info("register_thread_cb successful, cb_id:%d\n", cb_id);
+	log_info("register_thread_cb successful, cb_id:%d", cb_id);
+	return RT_SUCCESS;
 }
 
 
@@ -123,10 +125,10 @@ extern int checkpoint(cr_snapshot_t* snapshot)
 	cr_initialize_checkpoint_args_t(&my_args);
 	my_args.cr_fd = cr_snapshot.fd;
 	my_args.cr_scope = CR_SCOPE_PROC;
-	log_info("cr_initialize_checkpoint_args_t, cr_version:%d, cr_scope:%d, cr_target:%lu\n",
+	log_info("cr_initialize_checkpoint_args_t, cr_version:%d, cr_scope:%d, cr_target:%lu",
 	                my_args.cr_version, my_args.cr_scope, my_args.cr_target);
 	log_info(
-	                "cr_initialize_checkpoint_args_t, cr_fd:%d, cr_signal:%d, cr_timeout:%lu, cr_flags:%lu\n",
+	                "cr_initialize_checkpoint_args_t, cr_fd:%d, cr_signal:%d, cr_timeout:%lu, cr_flags:%lu",
 	                my_args.cr_fd, my_args.cr_signal, my_args.cr_timeout, my_args.cr_flags);
 
 	/* submit ckpt request */
@@ -134,21 +136,10 @@ extern int checkpoint(cr_snapshot_t* snapshot)
 	if (rc < 0) {
 		close(cr_snapshot.fd);
 		unlink(cr_snapshot.local_full_filename);
-		log_error("cr_request_checkpoint failed\n");
-		return -1;
+		log_error("cr_request_checkpoint failed");
+		return RT_ERROR;
 	}
-	log_info("cr_request_checkpoint success, chkpt_handle:%lu\n", ckpt_handle);
-
-	/* stat the ckpt file */
-	rc = stat(cr_snapshot.local_full_filename, &file_stat);
-	if (rc < 0) {
-		log_error("failed to stat file:%s", cr_snapshot.local_full_filename);
-		return -1;
-	} else if (file_stat.st_size == 0) {
-		log_error("ckpt file:%s is empty", cr_snapshot.local_full_filename);
-		return -1;
-	}
-	log_info("ckpt file:%s size:%lu", cr_snapshot.local_full_filename, file_stat.st_size);
+	log_info("cr_request_checkpoint success, chkpt_handle:%lu", ckpt_handle);
 
 	/* wait for checkpoint to finish */
 	do {
@@ -156,17 +147,27 @@ extern int checkpoint(cr_snapshot_t* snapshot)
 		if (rc < 0) {
 			if ((rc == CR_POLL_CHKPT_ERR_POST) && (errno == CR_ERESTARTED)) {
 				/* Check if restarting. This is not an error. */
-				rc = 0;
 				break;
 			} else if (errno == EINTR) {
 				/* If Call was interrupted by a signal, retry the call */
 				;
 			} else {
 				/* Otherwise this is a real error that need to deal with */
-				return -1;
+				return RT_ERROR;
 			}
 		}
 	} while (rc < 0);
+
+	/* stat the ckpt file */
+	rc = stat(cr_snapshot.local_full_filename, &file_stat);
+	if (rc < 0) {
+		log_error("failed to stat file:%s", cr_snapshot.local_full_filename);
+		return RT_ERROR;
+	} else if (file_stat.st_size == 0) {
+		log_error("ckpt file:%s is empty", cr_snapshot.local_full_filename);
+		return RT_ERROR;
+	}
+	log_info("ckpt successful, ckpt file:%s size:%lu", cr_snapshot.local_full_filename, file_stat.st_size);
 
 	/* Close the file */
 	close(my_args.cr_fd);
@@ -176,7 +177,7 @@ extern int checkpoint(cr_snapshot_t* snapshot)
 	strncpy(snapshot->remote_location, cr_snapshot.remote_location, PATH_MAX_LEN - 1);
 	strncpy(snapshot->context_filename, cr_snapshot.context_filename, FILE_NAME_MAX_LEN - 1);
 
-	return 0;
+	return RT_SUCCESS;
 }
 
 /*
@@ -221,6 +222,6 @@ extern int restart(cr_snapshot_t* snapshot, bool spawn_child, pid_t *child_pid)
 
 	}
 
-	return 0;
+	return RT_SUCCESS;
 }
 
