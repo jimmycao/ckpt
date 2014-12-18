@@ -199,6 +199,7 @@ extern int restart(cr_snapshot_t* snapshot, bool spawn_child, pid_t *child_pid)
 		return RT_ERROR;
 	}
 	//TODO: /* here we read ckpt file from remote ckpt server to local FS */
+	strncpy(snapshot->local_location, "/tmp", 256);
 
 	snprintf(snapshot->local_full_filename, PATH_MAX_LEN + FILE_NAME_MAX_LEN - 1, "%s/%s",
 	                snapshot->local_location, snapshot->context_filename);
@@ -216,6 +217,7 @@ extern int restart(cr_snapshot_t* snapshot, bool spawn_child, pid_t *child_pid)
 		}
 		argv_free(argv);
 	} else {
+
 
 	}
 
