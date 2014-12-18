@@ -187,7 +187,7 @@ extern int checkpoint(cr_snapshot_t* snapshot)
 	int  fd;
 } cr_snapshot_t;
  */
-extern int restart(cr_snapshot_t* snapshot)
+extern int restart(cr_snapshot_t* snapshot, bool spawn_child, pid_t *child_pid)
 {
 	char restart_cmd[CMD_MAX_LEN];
 
@@ -203,6 +203,12 @@ extern int restart(cr_snapshot_t* snapshot)
 	snprintf(restart_cmd, CMD_MAX_LEN - 1, "cr_restart %s", snapshot->local_full_filename);
 
 	puts(restart_cmd);
+
+	if (!spawn_child) {
+
+	} else {
+
+	}
 
 	return 0;
 }

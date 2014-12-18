@@ -14,6 +14,7 @@ int main() {
 	int rc;
 	int i = 0;
 	cr_snapshot_t snapshot;
+	pid_t pid_restarted = -1;
 
 	for (i = 0; i < 10; i++) {
 		printf("i:%d\n", i);
@@ -41,7 +42,7 @@ int main() {
 		printf("i:%d\n", i);
 	}
 
-	rc = restart(&snapshot);
+	rc = restart(&snapshot, false, &pid_restarted);
 	if (rc < 0) {
 		log_error("failed to restart()");
 		return -1;

@@ -28,6 +28,6 @@ extern int register_thread_cb(cr_callback_t callback_fn, void* arg);
 
 extern int checkpoint(cr_snapshot_t* snapshot);
 
-extern int restart(cr_snapshot_t* snapshot);
+extern int restart(cr_snapshot_t* snapshot, bool spawn_child, pid_t *child_pid);
 
 #endif /* CR_H_ */
