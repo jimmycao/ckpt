@@ -11,9 +11,16 @@ typedef struct cr_snapshot {
 	int  fd;
 } cr_snapshot_t;
 
+typedef struct callback_arg {
+	int* fd_array;
+	int fd_array_size;
+} callback_arg_t;
+
 extern pid_t my_pid;
 
 extern int init();
+
+extern int default_signal_callback_fn(void* arg);
 
 extern int register_signal_cb(cr_callback_t callback_fn, void* arg);
 

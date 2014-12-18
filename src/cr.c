@@ -1,8 +1,11 @@
+#include <stdio.h>
+#include <stdlib.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <time.h>
+#include <string.h>
 
 #include "libcr.h"
 #include "log_utils.h"
@@ -11,20 +14,28 @@
 #include "conf.h"
 #include "constant.h"
 
+pid_t my_pid = -1;
 
 static cr_snapshot_t cr_snapshot;
-extern pid_t my_pid = -1;
 
 extern int init()
 {
+	int rc;
+	char hostname[256];
 	cr_client_id_t client_id;
 
 	my_pid = getpid();
+	rc = gethostname(hostname, 255);
+	if (rc < 0) {
+		log_error("failed to gethostname()");
+		return -1;
+	}
+	time_t tm = time(NULL);
 
 	strncpy(cr_snapshot.local_location, LOCAL_LOCATION, PATH_MAX_LEN - 1);
 	strncpy(cr_snapshot.remote_location, REMOTE_LOCATION, PATH_MAX_LEN - 1);
-	time_t tm = time(NULL);
-	snprintf(cr_snapshot.context_filename, FILE_NAME_MAX_LEN - 1, "ckpt.%lu", tm);
+
+	snprintf(cr_snapshot.context_filename, FILE_NAME_MAX_LEN - 1, "ckpt.%lu.%s.%lu", my_pid, hostname, tm);
 	snprintf(cr_snapshot.local_full_filename, PATH_MAX_LEN + FILE_NAME_MAX_LEN - 1, "%s/%s",
 	                cr_snapshot.local_location, cr_snapshot.context_filename);
 	log_info(
@@ -52,6 +63,29 @@ extern int init()
 	return 0;
 }
 
+extern int default_signal_callback_fn(void* arg)
+{
+	int i;
+	int rc;
+	const struct cr_checkpoint_info *ckpt_info = NULL;
+
+	if (arg != NULL) {
+		callback_arg_t* cb_arg_p = (callback_arg_t*) arg;
+		for (i = 0; i < cb_arg_p->fd_array_size; i++) {
+			close(cb_arg_p->fd_array[i]);
+		}
+	}
+
+	ckpt_info = cr_get_checkpoint_info();
+
+	if (ckpt_info->requester == my_pid && !IF_CHECKPOINT_MYSELF) {
+		rc = cr_checkpoint(CR_CHECKPOINT_OMIT);
+	}  else {
+		rc = cr_checkpoint(CR_CHECKPOINT_READY);
+	}
+	return 0;
+}
+
 extern int register_signal_cb(cr_callback_t callback_fn, void* arg)
 {
 	cr_callback_id_t cb_id;
@@ -62,6 +96,8 @@ extern int register_signal_cb(cr_callback_t callback_fn, void* arg)
 	}
 	log_info("register_signal_cb successful, cb_id:%d\n", cb_id);
 }
+
+
 
 extern int register_thread_cb(cr_callback_t callback_fn, void* arg)
 {
@@ -135,6 +171,5 @@ extern int checkpoint()
 	close(my_args.cr_fd);
 
 	return 0;
-}
+}
 
-
