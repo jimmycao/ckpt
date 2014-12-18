@@ -41,12 +41,12 @@ int main() {
 	for (i = 10; i < 20; i++) {
 		printf("i:%d\n", i);
 	}
-
-	rc = restart(&snapshot, false, &pid_restarted);
-	if (rc < 0) {
-		log_error("failed to restart()");
-		return -1;
-	}
+//
+//	rc = restart(&snapshot, false, &pid_restarted);
+//	if (rc < 0) {
+//		log_error("failed to restart()");
+//		return -1;
+//	}
 	return 0;
 }
 

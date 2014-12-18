@@ -144,7 +144,7 @@ void argv_free(char **argv)
 static char **argv_split_inter(const char *src_string, int delimiter,
 		int include_empty)
 {
-	char arg[SIZE];
+	char arg[STRING_MAX_LEN];
 	char **argv = NULL;
 	const char *p;
 	char *argtemp;
@@ -178,7 +178,7 @@ static char **argv_split_inter(const char *src_string, int delimiter,
 		}
 
 		/* long argument, malloc buffer, copy and add */
-		else if (arglen > (SIZE - 1)) {
+		else if (arglen > (STRING_MAX_LEN - 1)) {
 			argtemp = (char*) malloc(arglen + 1);
 			if (NULL == argtemp)
 				return NULL;

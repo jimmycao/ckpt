@@ -11,6 +11,7 @@ typedef enum {false, true} bool;
 #define RT_ERROR    -1
 #define RT_FAILURE  -1
 
+#define STRING_MAX_LEN  8192
 #define PATH_MAX_LEN 256
 #define FILE_NAME_MAX_LEN 256
 #define CMD_MAX_LEN 256

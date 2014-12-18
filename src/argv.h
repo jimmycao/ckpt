@@ -18,6 +18,7 @@
 #include <sys/types.h>
 #endif
 
+#include "constant.h"
 /**
  * Append a string (by value) to an new or existing NULL-terminated
  * argv array.

@@ -8,11 +8,12 @@
 #include <string.h>
 
 #include "libcr.h"
-#include "log_utils.h"
-
 #include "cr.h"
+
 #include "conf.h"
 #include "constant.h"
+#include "log_utils.h"
+#include "argv.h"
 
 pid_t my_pid = -1;
 
@@ -190,10 +191,12 @@ extern int checkpoint(cr_snapshot_t* snapshot)
 extern int restart(cr_snapshot_t* snapshot, bool spawn_child, pid_t *child_pid)
 {
 	char restart_cmd[CMD_MAX_LEN];
+	char **argv;
+	int rt;
 
 	if (strlen(snapshot->remote_location) == 0 || strlen(snapshot->context_filename) == 0) {
 		log_error("restart: snapshot->remote_location or snapshot->context_filename is empty");
-		return -1;
+		return RT_ERROR;
 	}
 	//TODO: /* here we read ckpt file from remote ckpt server to local FS */
 
@@ -205,7 +208,13 @@ extern int restart(cr_snapshot_t* snapshot, bool spawn_child, pid_t *child_pid)
 	puts(restart_cmd);
 
 	if (!spawn_child) {
-
+		argv = argv_split(restart_cmd, ' ');
+		rt = execvp("cr_restart", argv);
+		if (rt < 0) {
+			log_error("restart: failed to restart %s via execvp", snapshot->local_full_filename);
+			return RT_ERROR;
+		}
+		argv_free(argv);
 	} else {
 
 	}
