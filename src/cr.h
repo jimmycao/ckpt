@@ -26,8 +26,8 @@ extern int register_signal_cb(cr_callback_t callback_fn, void* arg);
 
 extern int register_thread_cb(cr_callback_t callback_fn, void* arg);
 
-extern int checkpoint();
+extern int checkpoint(cr_snapshot_t* snapshot);
 
-extern int finalize();
+extern int restart(cr_snapshot_t* snapshot);
 
 #endif /* CR_H_ */

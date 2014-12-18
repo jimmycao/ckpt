@@ -13,6 +13,8 @@
 int main() {
 	int rc;
 	int i = 0;
+	cr_snapshot_t snapshot;
+
 	for (i = 0; i < 10; i++) {
 		printf("i:%d\n", i);
 	}
@@ -29,7 +31,7 @@ int main() {
 		return -1;
 	}
 
-	rc = checkpoint();
+	rc = checkpoint(&snapshot);
 	if (rc < 0) {
 		log_error("failed to checkpoint()");
 		return -1;
@@ -37,6 +39,12 @@ int main() {
 
 	for (i = 10; i < 20; i++) {
 		printf("i:%d\n", i);
+	}
+
+	rc = restart(&snapshot);
+	if (rc < 0) {
+		log_error("failed to restart()");
+		return -1;
 	}
 	return 0;
 }

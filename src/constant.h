@@ -3,6 +3,7 @@
 
 #define PATH_MAX_LEN 256
 #define FILE_NAME_MAX_LEN 256
+#define CMD_MAX_LEN 256
 
 
 
